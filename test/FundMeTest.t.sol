@@ -31,22 +31,13 @@ contract FundMeTest is Test {
         //assertEq(fundMe.i_owner(), address(this), "The owner should be the address that deployed the contract.");
     }
 
-
-    // function testFund() external {
-    //     // Arrange
-    //     FundMe fundMe = new FundMe();
-    //     uint256 sendValue = 1 ether;
-    //     // Act
-    //     fundMe.fund{value: sendValue}();
-    //     // Assert
-    //     assertEq(fundMe.addressToAmountFunded(address(this)), sendValue, "The amount funded should be equal to the sent value.");
-    // }
-   
-    // function testPriceFeedVersionIsAccurate() public view {
-    //     uint256 version = fundMe.getVersion();
-    //     console.log(version);
-    //     assertEq(version, 4, "The version should be 4.");
-    // }
+    function testFundUpdatesFundDataStructure() public {
+        uint256 sendValue = 10 ether;
+        fundMe.fund{value: sendValue}();
+        assertEq(fundMe.addressToAmountFunded(msg.sender), sendValue, "The amount funded should be equal to the sent value.");
+        // uint256 amountFunded = fundMe.getAddressToAmountFunded(msg.sender);
+        // assertEq(amountFunded, 10 ether);
+    }
 
     function testPriceFeedVersionIsAccurate() public view {
         uint256 version = fundMe.getVersion();
@@ -54,11 +45,9 @@ contract FundMeTest is Test {
         console.log("Version:", version);
 
         if (block.chainid == 11155111) {
-            //uint256 version = fundMe.getVersion();
             console.log(version);
             assertEq(version, 4);
         } else if (block.chainid == 1) {
-            //uint256 version = fundMe.getVersion();
             console.log(version);
             assertEq(version, 6);
         }
