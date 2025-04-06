@@ -41,8 +41,17 @@ contract FundMe {
         s_priceFeed = AggregatorV3Interface(priceFeed);
     }
 
+    // @funds our contract based on the ETH/USD price feed
+    // @minimum amount of dollars to fund the contract is 2e18 (2 USD)
+    // @msg.value is the amount of ETH sent to the contract
+    // @msg.sender is the address of the user that sent the ETH to the contract
+    // @addressToAmountFunded is a mapping of the address of the user that sent the ETH to the contract and the amount of ETH sent to the contract
+    // @funders is an array of the addresses of the users that sent ETH to the contract
     function fund() public payable {
-        require(msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, "Gas estimation failed. Error execution reverted, didn't send enough ETH."); //1e18 = 1ETH = 1000000000000000000WEI
+        require(
+            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, 
+            "Gas estimation failed. Error execution reverted, didn't send enough ETH."
+        ); //1e18 = 1ETH = 1000000000000000000WEI
         addressToAmountFunded[msg.sender] += msg.value;
         funders.push(msg.sender);
     }
