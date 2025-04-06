@@ -69,8 +69,16 @@ contract FundMe {
         _;
     }
 
+    // @sets the amount of ETH sent to the contract to 0 for each funder
+    // @deletes the funders array
+    // @msg.sender is the address of the user that sent the ETH to the contract
+    // @sends the funds to the owner of the contract
     function withdraw() public onlyOwner {
-        for(uint56 funderIndex = 0; funderIndex < funders.length; funderIndex++){
+        for(
+            uint56 funderIndex = 0; 
+            funderIndex < funders.length; 
+            funderIndex++
+        ) {
             address funder = funders[funderIndex];
             addressToAmountFunded[funder] = 0;
         }
