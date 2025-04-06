@@ -26,7 +26,7 @@ library PriceConverter {
     }
 }
 
-error notOwner(string error);
+error FundMe_notOwner(string error);
 
 contract FundMe {
     AggregatorV3Interface private s_priceFeed;
@@ -62,8 +62,8 @@ contract FundMe {
     }
 
     modifier onlyOwner {
-        if(msg.sender == i_owner){
-            revert notOwner("must be owner of the contract");
+        if(msg.sender != i_owner){
+            revert FundMe_notOwner("must be owner of the contract");
         }
         //require(msg.sender == i_owner, "must be owner");
         _;
@@ -71,9 +71,10 @@ contract FundMe {
 
     // @sets the amount of ETH sent to the contract to 0 for each funder
     // @deletes the funders array
-    // @msg.sender is the address of the user that sent the ETH to the contract
+    // @ensure the contract has sufficient funds to withdraw
     // @sends the funds to the owner of the contract
     function withdraw() public onlyOwner {
+        //address[] memory fundersCopy = funders;
         for(
             uint56 funderIndex = 0; 
             funderIndex < funders.length; 
@@ -85,11 +86,14 @@ contract FundMe {
 
         delete funders;
 
+        require(address(this).balance > 0, "Contract has no funds to withdraw");
+
+        //uint256 contractBalance = address(this).balance;
         (
             bool callSuccess,
             //bytes memory dataReturned
         ) = payable(msg.sender).call{value: address(this).balance}("");
-        require(callSuccess, "Call failed");
+        require(callSuccess, "Call failed: Unable to send funds to the owner of the contract");
     }
 
     receive () external payable {
