@@ -33,8 +33,8 @@ contract FundMe {
     address public immutable i_owner;
     using PriceConverter for uint256;
     uint256 public constant MINIMUM_USD = 2e18;//minimun amount of dollars
-    address[] public funders;
-    mapping(address funder => uint256 amountFunded) public addressToAmountFunded;
+    address[] public s_funders;
+    mapping(address funder => uint256 amountFunded) public s_addressToAmountFunded;
 
     constructor (address priceFeed) {
         i_owner = msg.sender;
@@ -45,15 +45,15 @@ contract FundMe {
     // @minimum amount of dollars to fund the contract is 2e18 (2 USD)
     // @msg.value is the amount of ETH sent to the contract
     // @msg.sender is the address of the user that sent the ETH to the contract
-    // @addressToAmountFunded is a mapping of the address of the user that sent the ETH to the contract and the amount of ETH sent to the contract
-    // @funders is an array of the addresses of the users that sent ETH to the contract
+    // @s_addressToAmountFunded is a mapping of the address of the user that sent the ETH to the contract and the amount of ETH sent to the contract
+    // @s_funders is an array of the addresses of the users that sent ETH to the contract
     function fund() public payable {
         require(
             msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD, 
             "Gas estimation failed. Error execution reverted, didn't send enough ETH."
         ); //1e18 = 1ETH = 1000000000000000000WEI
-        addressToAmountFunded[msg.sender] += msg.value;
-        funders.push(msg.sender);
+        s_addressToAmountFunded[msg.sender] += msg.value;
+        s_funders.push(msg.sender);
     }
 
     function getVersion() public view returns (uint256) {
@@ -70,21 +70,21 @@ contract FundMe {
     }
 
     // @sets the amount of ETH sent to the contract to 0 for each funder
-    // @deletes the funders array
+    // @deletes the s_funders array
     // @ensure the contract has sufficient funds to withdraw
     // @sends the funds to the owner of the contract
     function withdraw() public onlyOwner {
-        //address[] memory fundersCopy = funders;
+        //address[] memory s_fundersCopy = s_funders;
         for(
             uint56 funderIndex = 0; 
-            funderIndex < funders.length; 
+            funderIndex < s_funders.length; 
             funderIndex++
         ) {
-            address funder = funders[funderIndex];
-            addressToAmountFunded[funder] = 0;
+            address funder = s_funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
         }
 
-        delete funders;
+        delete s_funders;
 
         require(address(this).balance > 0, "Contract has no funds to withdraw");
 
@@ -102,5 +102,13 @@ contract FundMe {
 
     fallback () external payable {
         fund();
+    }
+
+    function getAddressToAmountFunded(address fundingAddress) public view returns (uint256) {
+        return s_addressToAmountFunded[fundingAddress];
+    }
+
+    function getFunder(uint256 index) public view returns (address) {
+        return s_funders[index];
     }
 }
