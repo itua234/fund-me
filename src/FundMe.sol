@@ -33,8 +33,8 @@ contract FundMe {
     address public immutable i_owner;
     using PriceConverter for uint256;
     uint256 public constant MINIMUM_USD = 2e18;//minimun amount of dollars
-    address[] public s_funders;
-    mapping(address funder => uint256 amountFunded) public s_addressToAmountFunded;
+    address[] private s_funders;
+    mapping(address funder => uint256 amountFunded) private s_addressToAmountFunded;
 
     constructor (address priceFeed) {
         i_owner = msg.sender;
@@ -110,5 +110,9 @@ contract FundMe {
 
     function getFunder(uint256 index) public view returns (address) {
         return s_funders[index];
+    }
+
+    function getOwner() public view returns (address) {
+        return i_owner;
     }
 }

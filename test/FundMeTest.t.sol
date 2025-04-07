@@ -8,6 +8,7 @@ import {DeployFundMe} from "../script/DeployFundMe.s.sol";
 contract FundMeTest is Test {
     FundMe public fundMe;
     address alice = makeAddr("alice");
+    uint256 constant SEND_VALUE = 10 ether; //
 
     function setUp() external {
         // Deploy the FundMe contract
@@ -15,11 +16,6 @@ contract FundMeTest is Test {
         // Alternatively, you can use the DeployFundMe script to deploy the contract
         DeployFundMe deployFundMe = new DeployFundMe();
         fundMe = deployFundMe.run();
-        // Alternatively, you can use the following line to deploy the contract directly
-        //fundMe = new FundMe(0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF); // Chainlink ETH/USD price feed address on Goerli
-        // Set up the test environment
-        // vm.deal(address(this), 10 ether); // Give this contract 10 ether
-        // console.log("Test contract balance:", address(this).balance);
     }
     
     function testMinimumDollarIsfive () public view {
@@ -37,12 +33,11 @@ contract FundMeTest is Test {
     function testFundUpdatesFundDataStructure() public {
         vm.prank(alice);
         emit log_address(alice);
-        vm.deal(alice, 10 ether); // Give Alice 1 ether
-       
-        uint256 sendValue = 10 ether;
-        fundMe.fund{value: sendValue}();
+        vm.deal(alice, SEND_VALUE); // Give Alice 1 ether
+        fundMe.fund{value: SEND_VALUE}();
+
         uint256 amountFunded = fundMe.getAddressToAmountFunded(alice);
-        assertEq(amountFunded, sendValue, "The amount funded should be equal to the sent value.");
+        assertEq(amountFunded, SEND_VALUE, "The amount funded should be equal to the sent value.");
     }
 
     function testPriceFeedVersionIsAccurate() public view {
@@ -58,6 +53,36 @@ contract FundMeTest is Test {
             assertEq(version, 6);
         }
     }      
+
+    function testAddsFunderToArrayOfFunders() public {
+        vm.prank(alice);
+        emit log_address(alice);
+        vm.deal(alice, SEND_VALUE); // Give Alice 1 ether
+        fundMe.fund{value: SEND_VALUE}();
+
+        address funder = fundMe.getFunder(0);
+        assertEq(funder, alice);
+    }
+
+    function testOnlyOwnerCanWithdraw() public funded {
+        vm.expectRevert();
+        vm.prank(alice);
+        fundMe.withdraw();
+    }
+
+    modifier funded() {
+        vm.prank(alice);
+        vm.deal(alice, SEND_VALUE); // Give Alice 1 ether
+        fundMe.fund{value: SEND_VALUE}();
+        assert(address(fundMe).balance > 0);
+        _;
+    }
+
+    function testWithdrawFromASingleFunder() public funded {
+        uint256 startingFundMeBalance = address(fundMe).balance;
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        
+    }
 
     // function testFundFailsWIthoutEnoughETH() public {
     //     vm.expectRevert(); // <- The next line after this one should revert! If not test fails.
