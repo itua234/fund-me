@@ -78,11 +78,14 @@ contract FundMeTest is Test {
         _;
     }
 
-    function testWithdrawFromASingleFunder() public funded {
-        uint256 startingFundMeBalance = address(fundMe).balance;
-        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+    // function testWithdrawFromASingleFunder() public funded {
+    //     uint256 startingFundMeBalance = address(fundMe).balance;
+    //     uint256 startingOwnerBalance = fundMe.getOwner().balance;
         
-    }
+    //     vm.startPrank(fundMe.getOwner());
+    //     fundMe.withdraw();
+    //     vm.stopPrank();
+    // }
 
     // function testFundFailsWIthoutEnoughETH() public {
     //     vm.expectRevert(); // <- The next line after this one should revert! If not test fails.
